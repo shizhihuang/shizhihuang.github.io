@@ -1,751 +1,169 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>潮流动物消消乐</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-        
-        body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            font-family: 'Poppins', sans-serif;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-            touch-action: none;
-        }
-        
-        .game-container {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
-            border-radius: 30px;
-            padding: 20px;
-            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
-            border: 1px solid rgba(255, 255, 255, 0.18);
-            text-align: center;
-            position: relative;
-            width: 100%;
-            max-width: 400px;
-            margin: 10px;
-        }
-        
-        h1 {
-            color: white;
-            font-size: 28px;
-            font-weight: 700;
-            margin-bottom: 20px;
-            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        .game-board {
-            display: grid;
-            grid-template-columns: repeat(8, 1fr);
-            grid-template-rows: repeat(8, 1fr);
-            gap: 2px;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 10px;
-            border-radius: 15px;
-            margin: 0 auto 20px;
-            position: relative;
-            aspect-ratio: 1;
-            width: 100%;
-            max-width: 320px;
-        }
-        
-        .tile {
-            width: 100%;
-            height: 100%;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-            background: rgba(255, 255, 255, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            user-select: none;
-        }
-        
-        .tile:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        }
-        
-        .tile.selected {
-            transform: scale(1.1);
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
-            border: 2px solid white;
-        }
-        
-        .tile.matching {
-            animation: pulse 0.6s ease-in-out;
-        }
-        
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.2); }
-            100% { transform: scale(0); opacity: 0; }
-        }
-        
-        .tile.falling {
-            animation: fall 0.5s ease-in;
-        }
-        
-        @keyframes fall {
-            from { transform: translateY(-100px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        
-        .score-panel {
-            display: flex;
-            justify-content: space-around;
-            margin-bottom: 15px;
-            gap: 10px;
-        }
-        
-        .score-item {
-            background: rgba(255, 255, 255, 0.2);
-            padding: 10px 15px;
-            border-radius: 15px;
-            color: white;
-            font-weight: 600;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            flex: 1;
-        }
-        
-        .score-label {
-            font-size: 12px;
-            opacity: 0.8;
-            margin-bottom: 3px;
-        }
-        
-        .score-value {
-            font-size: 18px;
-            font-weight: 700;
-        }
-        
-        .combo-indicator {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 36px;
-            font-weight: 700;
-            color: white;
-            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
-            opacity: 0;
-            pointer-events: none;
-            z-index: 100;
-        }
-        
-        .combo-indicator.show {
-            animation: comboShow 1s ease-out;
-        }
-        
-        @keyframes comboShow {
-            0% { 
-                opacity: 0; 
-                transform: translate(-50%, -50%) scale(0.5); 
-            }
-            50% { 
-                opacity: 1; 
-                transform: translate(-50%, -50%) scale(1.2); 
-            }
-            100% { 
-                opacity: 0; 
-                transform: translate(-50%, -50%) scale(1.5); 
-            }
-        }
-        
-        .particle {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            background: white;
-            border-radius: 50%;
-            pointer-events: none;
-            animation: particle 1s ease-out forwards;
-        }
-        
-        @keyframes particle {
-            0% {
-                opacity: 1;
-                transform: scale(1);
-            }
-            100% {
-                opacity: 0;
-                transform: scale(0) translate(var(--dx), var(--dy));
-            }
-        }
-        
-        .progress-bar {
-            width: 100%;
-            height: 6px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 3px;
-            overflow: hidden;
-            margin-bottom: 15px;
-        }
-        
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
-            border-radius: 3px;
-            transition: width 0.3s ease;
-            width: 0%;
-        }
-        
-        .level-indicator {
-            color: white;
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 10px;
-        }
-        
-        .restart-btn {
-            background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        }
-        
-        .restart-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>致我最爱的你 · 圣诞快乐</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background: linear-gradient(135deg, #0c243e, #1a3a5f);
+      color: #fff;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
 
-        /* 移动端适配 */
-        @media (max-width: 480px) {
-            .game-container {
-                padding: 15px;
-                margin: 5px;
-                border-radius: 20px;
-            }
-            
-            h1 {
-                font-size: 24px;
-                margin-bottom: 15px;
-            }
-            
-            .game-board {
-                max-width: 280px;
-                padding: 8px;
-                gap: 1px;
-            }
-            
-            .tile {
-                font-size: 20px;
-                border-radius: 8px;
-            }
-            
-            .score-panel {
-                gap: 8px;
-            }
-            
-            .score-item {
-                padding: 8px 12px;
-                border-radius: 12px;
-            }
-            
-            .score-label {
-                font-size: 10px;
-            }
-            
-            .score-value {
-                font-size: 16px;
-            }
-            
-            .combo-indicator {
-                font-size: 28px;
-            }
-        }
+    /* 雪花 */
+    .snowflake {
+      position: absolute;
+      top: -20px;
+      color: #fff;
+      font-size: 20px;
+      text-shadow: 0 0 5px rgba(255,255,255,0.7);
+      user-select: none;
+      z-index: 1;
+    }
 
-        @media (max-width: 360px) {
-            .game-board {
-                max-width: 250px;
-            }
-            
-            .tile {
-                font-size: 18px;
-            }
-        }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      text-align: center;
+      position: relative;
+      z-index: 2;
+    }
 
-        /* 手势操作提示 */
-        .gesture-hint {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 20px;
-            font-size: 12px;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            z-index: 1000;
-        }
+    h1 {
+      font-size: 2.8rem;
+      margin-bottom: 20px;
+      text-shadow: 0 0 10px rgba(255,255,255,0.6);
+      color: #ffd700;
+    }
 
-        .gesture-hint.show {
-            opacity: 1;
-        }
-    </style>
+    .photo-frame {
+      width: 220px;
+      height: 220px;
+      margin: 20px auto;
+      border: 8px solid #c1121f;
+      border-radius: 50%;
+      overflow: hidden;
+      box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+      background: #eee url('https://via.placeholder.com/220') center/cover no-repeat;
+    }
+
+    /* 👉 替换下面的 URL 为你女朋友的照片链接 */
+    .photo-frame.custom {
+      background-image: url('https://your-photo-url-here.jpg');
+    }
+
+    p {
+      font-size: 1.4rem;
+      line-height: 1.6;
+      margin: 25px 0;
+      color: #f8f9fa;
+    }
+
+    .signature {
+      margin-top: 30px;
+      font-style: italic;
+      color: #ffd700;
+      font-size: 1.2rem;
+    }
+
+    footer {
+      margin-top: 40px;
+      font-size: 0.9rem;
+      color: #bbb;
+    }
+
+    @media (max-width: 600px) {
+      hja1 { font-size: 2.2rem; }
+      .photo-frame { width: 180px; height: 180px; }
+      p { font-size: 1.2rem; }
+    }
+  </style>
 </head>
 <body>
-    <div class="game-container">
-        <h1>🐾 潮流动物消消乐 🐾</h1>
-        
-        <div class="score-panel">
-            <div class="score-item">
-                <div class="score-label">得分</div>
-                <div class="score-value" id="score">0</div>
-            </div>
-            <div class="score-item">
-                <div class="score-label">等级</div>
-                <div class="score-value" id="level">1</div>
-            </div>
-            <div class="score-item">
-                <div class="score-label">目标</div>
-                <div class="score-value" id="target">1000</div>
-            </div>
-        </div>
-        
-        <div class="level-indicator">第 <span id="currentLevel">1</span> 关</div>
-        <div class="progress-bar">
-            <div class="progress-fill" id="progressFill"></div>
-        </div>
-        
-        <div class="game-board" id="gameBoard"></div>
-        
-        <button class="restart-btn" onclick="restartGame()">重新开始</button>
-        
-        <div class="combo-indicator" id="comboIndicator"></div>
-        <div class="gesture-hint" id="gestureHint">滑动交换相邻动物</div>
-    </div>
 
-    <script>
-        const BOARD_SIZE = 8;
-        const ANIMALS = ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯'];
-        
-        let board = [];
-        let score = 0;
-        let level = 1;
-        let targetScore = 1000;
-        let selectedTile = null;
-        let isAnimating = false;
-        
-        // 手势操作相关变量
-        let touchStartX = 0;
-        let touchStartY = 0;
-        let touchEndX = 0;
-        let touchEndY = 0;
-        let minSwipeDistance = 30;
-        
-        function initGame() {
-            createBoard();
-            renderBoard();
-            updateUI();
-            addTouchEvents();
-            
-            // 显示手势提示
-            setTimeout(() => {
-                const hint = document.getElementById('gestureHint');
-                hint.classList.add('show');
-                setTimeout(() => hint.classList.remove('show'), 2000);
-            }, 1000);
-        }
-        
-        function createBoard() {
-            board = [];
-            for (let row = 0; row < BOARD_SIZE; row++) {
-                board[row] = [];
-                for (let col = 0; col < BOARD_SIZE; col++) {
-                    board[row][col] = ANIMALS[Math.floor(Math.random() * ANIMALS.length)];
-                }
-            }
-            
-            // 确保初始状态没有匹配
-            while (findMatches().length > 0) {
-                createBoard();
-            }
-        }
-        
-        function renderBoard() {
-            const gameBoard = document.getElementById('gameBoard');
-            gameBoard.innerHTML = '';
-            
-            for (let row = 0; row < BOARD_SIZE; row++) {
-                for (let col = 0; col < BOARD_SIZE; col++) {
-                    const tile = document.createElement('div');
-                    tile.className = 'tile';
-                    tile.dataset.row = row;
-                    tile.dataset.col = col;
-                    tile.textContent = board[row][col];
-                    tile.addEventListener('click', () => handleTileClick(row, col));
-                    
-                    // 添加触摸事件
-                    tile.addEventListener('touchstart', handleTouchStart, {passive: false});
-                    tile.addEventListener('touchmove', handleTouchMove, {passive: false});
-                    tile.addEventListener('touchend', handleTouchEnd, {passive: false});
-                    
-                    gameBoard.appendChild(tile);
-                }
-            }
-        }
-        
-        function handleTileClick(row, col) {
-            if (isAnimating) return;
-            
-            const clickedTile = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
-            
-            if (!selectedTile) {
-                selectedTile = {row, col};
-                clickedTile.classList.add('selected');
-            } else {
-                const prevTile = document.querySelector(`[data-row="${selectedTile.row}"][data-col="${selectedTile.col}"]`);
-                prevTile.classList.remove('selected');
-                
-                if (isAdjacent(selectedTile, {row, col})) {
-                    swapTiles(selectedTile, {row, col});
-                }
-                
-                selectedTile = null;
-            }
-        }
-        
-        // 触摸事件处理
-        function handleTouchStart(e) {
-            e.preventDefault();
-            const touch = e.touches[0];
-            const tile = e.target;
-            const row = parseInt(tile.dataset.row);
-            const col = parseInt(tile.dataset.col);
-            
-            touchStartX = touch.clientX;
-            touchStartY = touch.clientY;
-            
-            // 高亮显示选中的方块
-            if (!isAnimating) {
-                document.querySelectorAll('.tile').forEach(t => t.classList.remove('selected'));
-                tile.classList.add('selected');
-                selectedTile = {row, col};
-            }
-        }
-        
-        function handleTouchMove(e) {
-            e.preventDefault();
-        }
-        
-        function handleTouchEnd(e) {
-            e.preventDefault();
-            if (isAnimating || !selectedTile) return;
-            
-            const touch = e.changedTouches[0];
-            touchEndX = touch.clientX;
-            touchEndY = touch.clientY;
-            
-            const deltaX = touchEndX - touchStartX;
-            const deltaY = touchEndY - touchStartY;
-            
-            // 清除选中状态
-            document.querySelectorAll('.tile').forEach(t => t.classList.remove('selected'));
-            
-            // 判断滑动方向
-            if (Math.abs(deltaX) > Math.abs(deltaY)) {
-                // 水平滑动
-                if (Math.abs(deltaX) > minSwipeDistance) {
-                    const targetCol = selectedTile.col + (deltaX > 0 ? 1 : -1);
-                    if (targetCol >= 0 && targetCol < BOARD_SIZE) {
-                        swapTiles(selectedTile, {row: selectedTile.row, col: targetCol});
-                    }
-                }
-            } else {
-                // 垂直滑动
-                if (Math.abs(deltaY) > minSwipeDistance) {
-                    const targetRow = selectedTile.row + (deltaY > 0 ? 1 : -1);
-                    if (targetRow >= 0 && targetRow < BOARD_SIZE) {
-                        swapTiles(selectedTile, {row: targetRow, col: selectedTile.col});
-                    }
-                }
-            }
-            
-            selectedTile = null;
-        }
-        
-        function addTouchEvents() {
-            // 防止页面滚动
-            document.addEventListener('touchmove', function(e) {
-                e.preventDefault();
-            }, {passive: false});
-        }
-        
-        function isAdjacent(tile1, tile2) {
-            const rowDiff = Math.abs(tile1.row - tile2.row);
-            const colDiff = Math.abs(tile1.col - tile2.col);
-            return (rowDiff === 1 && colDiff === 0) || (rowDiff === 0 && colDiff === 1);
-        }
-        
-        async function swapTiles(tile1, tile2) {
-            isAnimating = true;
-            
-            // 保存原始值用于可能的回退
-            const original1 = board[tile1.row][tile1.col];
-            const original2 = board[tile2.row][tile2.col];
-            
-            // 交换数组中的值
-            board[tile1.row][tile1.col] = original2;
-            board[tile2.row][tile2.col] = original1;
-            
-            // 更新显示
-            renderBoard();
-            
-            // 检查是否有匹配
-            const matches = findMatches();
-            
-            if (matches.length > 0) {
-                await processMatches(matches);
-                await dropTiles();
-                await fillEmptySpaces();
-                
-                // 继续检查新的匹配
-                while (findMatches().length > 0) {
-                    const newMatches = findMatches();
-                    await processMatches(newMatches);
-                    await dropTiles();
-                    await fillEmptySpaces();
-                }
-            } else {
-                // 如果没有匹配，交换回来
-                board[tile1.row][tile1.col] = original1;
-                board[tile2.row][tile2.col] = original2;
-                renderBoard();
-            }
-            
-            isAnimating = false;
-            updateUI();
-            checkLevelUp();
-        }
-        
-        function findMatches() {
-            const matches = [];
-            
-            // 检查水平匹配
-            for (let row = 0; row < BOARD_SIZE; row++) {
-                let count = 1;
-                let current = board[row][0];
-                
-                for (let col = 1; col < BOARD_SIZE; col++) {
-                    if (board[row][col] === current) {
-                        count++;
-                    } else {
-                        if (count >= 3) {
-                            for (let i = col - count; i < col; i++) {
-                                matches.push({row, col: i});
-                            }
-                        }
-                        count = 1;
-                        current = board[row][col];
-                    }
-                }
-                
-                if (count >= 3) {
-                    for (let i = BOARD_SIZE - count; i < BOARD_SIZE; i++) {
-                        matches.push({row, col: i});
-                    }
-                }
-            }
-            
-            // 检查垂直匹配
-            for (let col = 0; col < BOARD_SIZE; col++) {
-                let count = 1;
-                let current = board[0][col];
-                
-                for (let row = 1; row < BOARD_SIZE; row++) {
-                    if (board[row][col] === current) {
-                        count++;
-                    } else {
-                        if (count >= 3) {
-                            for (let i = row - count; i < row; i++) {
-                                matches.push({row: i, col});
-                            }
-                        }
-                        count = 1;
-                        current = board[row][col];
-                    }
-                }
-                
-                if (count >= 3) {
-                    for (let i = BOARD_SIZE - count; i < BOARD_SIZE; i++) {
-                        matches.push({row: i, col});
-                    }
-                }
-            }
-            
-            // 去重
-            const uniqueMatches = [];
-            const seen = new Set();
-            
-            matches.forEach(match => {
-                const key = `${match.row}-${match.col}`;
-                if (!seen.has(key)) {
-                    seen.add(key);
-                    uniqueMatches.push(match);
-                }
-            });
-            
-            return uniqueMatches;
-        }
-        
-        async function processMatches(matches) {
-            const points = matches.length * 10 * level;
-            score += points;
-            
-            // 显示连击效果
-            if (matches.length >= 4) {
-                showCombo(matches.length);
-            }
-            
-            // 创建粒子效果
-            matches.forEach(match => {
-                const tile = document.querySelector(`[data-row="${match.row}"][data-col="${match.col}"]`);
-                tile.classList.add('matching');
-                createParticles(tile);
-            });
-            
-            // 等待动画完成
-            await new Promise(resolve => setTimeout(resolve, 600));
-            
-            // 清除匹配的动物
-            matches.forEach(match => {
-                board[match.row][match.col] = null;
-            });
-        }
-        
-        async function dropTiles() {
-            for (let col = 0; col < BOARD_SIZE; col++) {
-                let writeIndex = BOARD_SIZE - 1;
-                
-                for (let row = BOARD_SIZE - 1; row >= 0; row--) {
-                    if (board[row][col] !== null) {
-                        if (writeIndex !== row) {
-                            board[writeIndex][col] = board[row][col];
-                            board[row][col] = null;
-                        }
-                        writeIndex--;
-                    }
-                }
-            }
-            
-            renderBoard();
-            await new Promise(resolve => setTimeout(resolve, 300));
-        }
-        
-        async function fillEmptySpaces() {
-            for (let col = 0; col < BOARD_SIZE; col++) {
-                for (let row = 0; row < BOARD_SIZE; row++) {
-                    if (board[row][col] === null) {
-                        board[row][col] = ANIMALS[Math.floor(Math.random() * ANIMALS.length)];
-                        const tile = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
-                        tile.classList.add('falling');
-                    }
-                }
-            }
-            
-            renderBoard();
-            await new Promise(resolve => setTimeout(resolve, 500));
-        }
-        
-        function createParticles(element) {
-            const rect = element.getBoundingClientRect();
-            const containerRect = document.querySelector('.game-container').getBoundingClientRect();
-            
-            for (let i = 0; i < 6; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                
-                const angle = (Math.PI * 2 * i) / 6;
-                const distance = 30 + Math.random() * 30;
-                
-                particle.style.setProperty('--dx', `${Math.cos(angle) * distance}px`);
-                particle.style.setProperty('--dy', `${Math.sin(angle) * distance}px`);
-                
-                particle.style.left = `${rect.left - containerRect.left + 15}px`;
-                particle.style.top = `${rect.top - containerRect.top + 15}px`;
-                
-                document.querySelector('.game-container').appendChild(particle);
-                
-                setTimeout(() => particle.remove(), 1000);
-            }
-        }
-        
-        function showCombo(count) {
-            const indicator = document.getElementById('comboIndicator');
-            indicator.textContent = `${count}连击!`;
-            indicator.classList.add('show');
-            
-            setTimeout(() => {
-                indicator.classList.remove('show');
-            }, 1000);
-        }
-        
-        function updateUI() {
-            document.getElementById('score').textContent = score;
-            document.getElementById('level').textContent = level;
-            document.getElementById('target').textContent = targetScore;
-            document.getElementById('currentLevel').textContent = level;
-            
-            const progress = Math.min((score / targetScore) * 100, 100);
-            document.getElementById('progressFill').style.width = `${progress}%`;
-        }
-        
-        function checkLevelUp() {
-            if (score >= targetScore) {
-                level++;
-                targetScore = level * 1000;
-                updateUI();
-                
-                // 升级动画
-                setTimeout(() => {
-                    alert(`🎉 恭喜升级到第 ${level} 关！`);
-                }, 500);
-            }
-        }
-        
-        function restartGame() {
-            score = 0;
-            level = 1;
-            targetScore = 1000;
-            selectedTile = null;
-            isAnimating = false;
-            initGame();
-        }
-        
-        // 启动游戏
-        initGame();
-    </script>
+  <!-- 雪花容器 -->
+  <div id="snow-container"></div>
+
+  <div class="container">
+    <h1>🎄 Merry Christmas, My Love 💖</h1>
+
+    <!-- 👇 替换 class 为 custom 并填入你的真实照片URL -->
+    <div class="photo-frame custom"></div>
+
+    <p>
+      这个圣诞夜，我想把全世界最暖的光都给你。<br>
+      愿我们的每一天，都像今天一样闪闪发亮。
+    </p>
+
+    <p>
+      谢谢你出现在我的生命里。<br>
+      余生，请继续做我的小星星 ✨
+    </p>
+
+    <div class="signature">—— 永远爱你的 [bb]</div>
+
+    <footer>
+      制作于 2025 年圣诞节 · 专属于你
+    </footer>
+  </div>
+
+  <script>
+    // 飘雪效果
+    function createSnowflakes() {
+      const container = document.getElementById('snow-container');
+      const flakes = ['❄', '❅', '❆'];
+      const count = 50;
+
+      for (let i = 0; i < count; i++) {
+        const snow = document.createElement('div');
+        snow.className = 'snowflake';
+        snow.innerHTML = flakes[Math.floor(Math.random() * flakes.length)];
+        snow.style.left = Math.random() * 100 + 'vw';
+        snow.style.opacity = Math.random() * 0.7 + 0.3;
+        snow.style.fontSize = (Math.random() * 20 + 10) + 'px';
+        snow.style.animationDuration = (Math.random() * 5 + 5) + 's';
+        snow.style.animationDelay = Math.random() * 5 + 's';
+        snow.style.transform = `rotate(${Math.random() * 360}deg)`;
+        container.appendChild(snow);
+
+        // 动画关键帧通过CSS实现（简化JS）
+        snow.style.setProperty('--duration', (Math.random() * 5 + 5) + 's');
+      }
+    }
+
+    // 添加CSS动画规则（动态飘落）
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes fall {
+        to { transform: translateY(100vh) rotate(360deg); }
+      }
+      .snowflake {
+        animation: fall var(--duration) linear infinite;
+      }
+    `;
+    document.head.appendChild(style);
+
+    window.onload = createSnowflakes;
+
+    // 可选：添加背景音乐（需用户交互后播放，避免自动播放被拦截）
+    /*
+    document.body.addEventListener('click', () => {
+      const audio = new Audio('https://your-music-url.mp3');
+      audio.loop = true;
+      audio.volume = 0.3;
+      audio.play().catch(e => console.log("Audio play failed:", e));
+    }, { once: true });
+    */
+  </script>
 </body>
 </html>
